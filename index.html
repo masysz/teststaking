@@ -25,8 +25,8 @@
 <body>
     <h1>Vanatic Staking DApp</h1>
     <button id="connectWallet">Connect Wallet</button>
-    <p>Connected Account: <span id="account"></span></p>
-    <p>Balance: <span id="balance"></span> VANA</p>
+    <p>Connected Account: <span id="account">Not Connected</span></p>
+    <p>Balance: <span id="balance">0</span> VANA</p>
 
     <h2>Stake VANA</h2>
     <input type="number" id="stakeAmount" placeholder="Enter amount">
@@ -34,7 +34,7 @@
 
     <h2>Claim Rewards</h2>
     <button id="claim">Claim VANATIC</button>
-    <p>Rewards: <span id="rewards"></span> VANATIC</p>
+    <p>Rewards: <span id="rewards">0</span> VANATIC</p>
 
     <h2>Withdraw Native Staking</h2>
     <button id="withdraw">Withdraw</button>
@@ -312,8 +312,8 @@
                 return;
             }
 
-            // Tambahkan jaringan VANA jika belum ada
             try {
+                // Tambahkan jaringan VANA jika belum ada
                 await window.ethereum.request({
                     method: "wallet_addEthereumChain",
                     params: [{
@@ -328,51 +328,67 @@
                         blockExplorerUrls: [blockExplorer],
                     }]
                 });
+
+                // Minta akun untuk connect
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                const account = accounts[0];
+                document.getElementById("account").textContent = account;
+
+                // Set provider dan signer
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
+
+                // Update saldo pengguna
+                const balance = await provider.getBalance(account);
+                document.getElementById("balance").textContent = ethers.utils.formatEther(balance);
+                updateRewards();
+
+                document.getElementById("status").textContent = "Wallet connected successfully!";
             } catch (error) {
-                alert("Failed to add network. Please add it manually.");
-                return;
+                console.error(error);
+                document.getElementById("status").textContent = "Failed to connect wallet. Check console for details.";
             }
-
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            signer = provider.getSigner();
-            const account = await signer.getAddress();
-            document.getElementById("account").textContent = account;
-
-            // Set up staking contract
-            stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
-
-            // Update balance
-            const balance = await provider.getBalance(account);
-            document.getElementById("balance").textContent = ethers.utils.formatEther(balance);
-
-            // Get rewards
-            updateRewards();
         }
 
         async function stakeTokens() {
-            const amount = document.getElementById("stakeAmount").value;
-            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-                alert("Please enter a valid amount.");
-                return;
-            }
+            try {
+                const amount = document.getElementById("stakeAmount").value;
+                if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                    alert("Please enter a valid amount.");
+                    return;
+                }
 
-            const tx = await stakingContract.deposit({ value: ethers.utils.parseEther(amount) });
-            await tx.wait();
-            document.getElementById("status").textContent = "Successfully staked!";
+                const tx = await stakingContract.deposit({ value: ethers.utils.parseEther(amount) });
+                await tx.wait();
+                document.getElementById("status").textContent = "Successfully staked!";
+            } catch (error) {
+                console.error(error);
+                document.getElementById("status").textContent = "Stake failed. Check console for details.";
+            }
         }
 
         async function claimRewards() {
-            const tx = await stakingContract.claimRewards();
-            await tx.wait();
-            document.getElementById("status").textContent = "Rewards claimed successfully!";
-            updateRewards();
+            try {
+                const tx = await stakingContract.claimRewards();
+                await tx.wait();
+                document.getElementById("status").textContent = "Rewards claimed successfully!";
+                updateRewards();
+            } catch (error) {
+                console.error(error);
+                document.getElementById("status").textContent = "Claim failed. Check console for details.";
+            }
         }
 
         async function withdrawTokens() {
-            const tx = await stakingContract.withdraw();
-            await tx.wait();
-            document.getElementById("status").textContent = "Successfully withdrawn!";
+            try {
+                const tx = await stakingContract.withdraw();
+                await tx.wait();
+                document.getElementById("status").textContent = "Successfully withdrawn!";
+            } catch (error) {
+                console.error(error);
+                document.getElementById("status").textContent = "Withdraw failed. Check console for details.";
+            }
         }
 
         async function updateRewards() {
@@ -380,6 +396,7 @@
                 const rewards = await stakingContract.calculateRewards();
                 document.getElementById("rewards").textContent = ethers.utils.formatEther(rewards);
             } catch (error) {
+                console.error(error);
                 document.getElementById("rewards").textContent = "0";
             }
         }
