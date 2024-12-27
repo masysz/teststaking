@@ -42,264 +42,39 @@
     <p id="status"></p>
 
     <script>
-        const stakingContractAddress = "0xfABa86c326d2031D6ECFa8345F7Cd70F2eB764A3"; // Ganti dengan alamat kontrak staking Anda
-        const stakingABI = [ /* [
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "devWithdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_vanaticToken",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "dev",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "_amount",
-				"type": "uint256"
-			}
-		],
-		"name": "DevWithdrawn",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "stake",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Staked",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "withdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "reward",
-				"type": "uint256"
-			}
-		],
-		"name": "Withdrawn",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "withdrawRewardPool",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "apy",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			}
-		],
-		"name": "calculateReward",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "LOCK_PERIOD",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_A_YEAR",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "stakes",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "rewardDebt",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalRewardPool",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalStaked",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "vanaticToken",
-		"outputs": [
-			{
-				"internalType": "contract IERC20",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-] */ ];
+        const stakingContractAddress = "0xd639405195bab235a44d293632e9fcc21fe61b79fe7841783e60f90b4d6d4da0"; // Alamat kontrak staking
+        const stakingABI = [
+            {
+                "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+                "name": "devWithdraw",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "stake",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "withdraw",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [{ "internalType": "address", "name": "user", "type": "address" }],
+                "name": "calculateReward",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
 
-        const rpcUrl = "https://rpc.vana.org"; // Jaringan VANA
+        const rpcUrl = "https://rpc.vana.org";
         const chainId = 1480;
         const symbol = "VANA";
         const blockExplorer = "https://vanascan.io";
@@ -313,7 +88,6 @@
             }
 
             try {
-                // Tambahkan jaringan VANA jika belum ada
                 await window.ethereum.request({
                     method: "wallet_addEthereumChain",
                     params: [{
@@ -329,17 +103,14 @@
                     }]
                 });
 
-                // Minta akun untuk connect
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 const account = accounts[0];
                 document.getElementById("account").textContent = account;
 
-                // Set provider dan signer
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
                 stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
 
-                // Update saldo pengguna
                 const balance = await provider.getBalance(account);
                 document.getElementById("balance").textContent = ethers.utils.formatEther(balance);
                 updateRewards();
@@ -359,7 +130,7 @@
                     return;
                 }
 
-                const tx = await stakingContract.deposit({ value: ethers.utils.parseEther(amount) });
+                const tx = await stakingContract.stake({ value: ethers.utils.parseEther(amount) });
                 await tx.wait();
                 document.getElementById("status").textContent = "Successfully staked!";
             } catch (error) {
@@ -370,10 +141,10 @@
 
         async function claimRewards() {
             try {
-                const tx = await stakingContract.claimRewards();
-                await tx.wait();
+                const tx = await stakingContract.calculateReward(await signer.getAddress());
+                const rewards = ethers.utils.formatEther(tx);
+                document.getElementById("rewards").textContent = rewards;
                 document.getElementById("status").textContent = "Rewards claimed successfully!";
-                updateRewards();
             } catch (error) {
                 console.error(error);
                 document.getElementById("status").textContent = "Claim failed. Check console for details.";
@@ -393,7 +164,7 @@
 
         async function updateRewards() {
             try {
-                const rewards = await stakingContract.calculateRewards();
+                const rewards = await stakingContract.calculateReward(await signer.getAddress());
                 document.getElementById("rewards").textContent = ethers.utils.formatEther(rewards);
             } catch (error) {
                 console.error(error);
