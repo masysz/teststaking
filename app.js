@@ -262,20 +262,38 @@ const contractABI = [
 document.getElementById('connectButton').addEventListener('click', async () => {
     if (window.ethereum) {
         try {
+            console.log('Requesting accounts...');
             await window.ethereum.request({ method: 'eth_requestAccounts' });
-            const chainId = await provider.getNetwork().then(network => network.chainId);
+            console.log('Accounts requested successfully.');
+
+            console.log('Getting network...');
+            const network = await provider.getNetwork();
+            console.log('Network:', network);
+
+            const chainId = network.chainId;
+            console.log('Chain ID:', chainId);
+
             if (chainId !== 1480) {
                 alert('Please switch to Vana network in MetaMask.');
                 return;
             }
+
+            console.log('Getting signer...');
             signer = provider.getSigner();
+            console.log('Signer:', signer);
+
+            console.log('Creating contract...');
             contract = new ethers.Contract(contractAddress, contractABI, signer);
+            console.log('Contract:', contract);
+
             document.getElementById('stakeButton').disabled = false;
             document.getElementById('withdrawButton').disabled = false;
             document.getElementById('calculateRewardButton').disabled = false;
+
+            console.log('Updating info...');
             updateInfo();
         } catch (error) {
-            console.error(error);
+            console.error('Error connecting to MetaMask:', error);
             alert('Failed to connect to MetaMask.');
         }
     } else {
@@ -286,47 +304,73 @@ document.getElementById('connectButton').addEventListener('click', async () => {
 document.getElementById('stakeButton').addEventListener('click', async () => {
     const amount = ethers.utils.parseEther(prompt("Enter amount to stake (in VANA):"));
     try {
+        console.log('Staking...');
         const tx = await contract.stake({ value: amount });
+        console.log('Transaction:', tx);
         await tx.wait();
+        console.log('Transaction confirmed.');
         alert('Staked successfully!');
         updateInfo();
     } catch (error) {
-        console.error(error);
+        console.error('Staking failed:', error);
         alert('Staking failed.');
     }
 });
 
 document.getElementById('withdrawButton').addEventListener('click', async () => {
     try {
+        console.log('Withdrawing...');
         const tx = await contract.withdraw();
+        console.log('Transaction:', tx);
         await tx.wait();
+        console.log('Transaction confirmed.');
         alert('Withdrawn successfully!');
         updateInfo();
     } catch (error) {
-        console.error(error);
+        console.error('Withdraw failed:', error);
         alert('Withdraw failed.');
     }
 });
 
 document.getElementById('calculateRewardButton').addEventListener('click', async () => {
     try {
+        console.log('Calculating reward...');
         const userAddress = await signer.getAddress();
+        console.log('User Address:', userAddress);
         const reward = await contract.calculateReward(userAddress);
+        console.log('Reward:', reward);
         document.getElementById('userRewardInfo').innerText = `User Reward: ${ethers.utils.formatEther(reward)} VANA`;
     } catch (error) {
-        console.error(error);
+        console.error('Failed to calculate reward:', error);
         alert('Failed to calculate reward.');
     }
 });
 
 async function updateInfo() {
     try {
+        console.log('Updating APY...');
         const apy = await contract.apy();
+        console.log('APY:', apy);
+
+        console.log('Updating total staked...');
         const totalStaked = await contract.totalStaked();
+        console.log('Total Staked:', totalStaked);
+
+        console.log('Updating total reward pool...');
         const totalRewardPool = await contract.totalRewardPool();
+        console.log('Total Reward Pool:', totalRewardPool);
+
+        console.log('Getting user address...');
         const userAddress = await signer.getAddress();
+        console.log('User Address:', userAddress);
+
+        console.log('Updating user stake...');
         const userStake = await contract.stakes(userAddress);
+        console.log('User Stake:', userStake);
+
+        console.log('Calculating user reward...');
         const userReward = await contract.calculateReward(userAddress);
+        console.log('User Reward:', userReward);
 
         document.getElementById('apyInfo').innerText = `APY: ${apy.toString()} %`;
         document.getElementById('totalStakedInfo').innerText = `Total Staked: ${ethers.utils.formatEther(totalStaked)} VANA`;
@@ -334,7 +378,7 @@ async function updateInfo() {
         document.getElementById('userStakeInfo').innerText = `User Stake: ${ethers.utils.formatEther(userStake.amount)} VANA`;
         document.getElementById('userRewardInfo').innerText = `User Reward: ${ethers.utils.formatEther(userReward)} VANA`;
     } catch (error) {
-        console.error(error);
+        console.error('Failed to update information:', error);
         alert('Failed to update information.');
     }
 }
