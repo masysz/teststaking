@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanatic Staking DApp</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #status {
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vanatic Staking DApp</h1>
+    <button id="connectWallet">Connect Wallet</button>
+    <p>Connected Account: <span id="account"></span></p>
+    <p>Balance: <span id="balance"></span> VANA</p>
+
+    <h2>Stake VANA</h2>
+    <input type="number" id="stakeAmount" placeholder="Enter amount">
+    <button id="stake">Stake</button>
+
+    <h2>Claim Rewards</h2>
+    <button id="claim">Claim VANATIC</button>
+    <p>Rewards: <span id="rewards"></span> VANATIC</p>
+
+    <h2>Withdraw Native Staking</h2>
+    <button id="withdraw">Withdraw</button>
+
+    <p id="status"></p>
+
+    <script>
+        const stakingContractAddress = "0xfABa86c326d2031D6ECFa8345F7Cd70F2eB764A3"; // Ganti dengan alamat kontrak staking Anda
+        const stakingABI = [ /* [
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "devWithdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_vanaticToken",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "dev",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "DevWithdrawn",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "stake",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Staked",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "reward",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdrawn",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawRewardPool",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "apy",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "calculateReward",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "LOCK_PERIOD",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "SECONDS_IN_A_YEAR",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "stakes",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "startTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "rewardDebt",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalRewardPool",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalStaked",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "vanaticToken",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+] */ ];
+
+        const rpcUrl = "https://rpc.vana.org"; // Jaringan VANA
+        const chainId = 1480;
+        const symbol = "VANA";
+        const blockExplorer = "https://vanascan.io";
+
+        let provider, signer, stakingContract;
+
+        async function connectWallet() {
+            if (!window.ethereum) {
+                alert("Metamask is not installed!");
+                return;
+            }
+
+            // Tambahkan jaringan VANA jika belum ada
+            try {
+                await window.ethereum.request({
+                    method: "wallet_addEthereumChain",
+                    params: [{
+                        chainId: `0x${chainId.toString(16)}`,
+                        chainName: "VANA Mainnet",
+                        nativeCurrency: {
+                            name: "VANA",
+                            symbol: symbol,
+                            decimals: 18,
+                        },
+                        rpcUrls: [rpcUrl],
+                        blockExplorerUrls: [blockExplorer],
+                    }]
+                });
+            } catch (error) {
+                alert("Failed to add network. Please add it manually.");
+                return;
+            }
+
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            signer = provider.getSigner();
+            const account = await signer.getAddress();
+            document.getElementById("account").textContent = account;
+
+            // Set up staking contract
+            stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
+
+            // Update balance
+            const balance = await provider.getBalance(account);
+            document.getElementById("balance").textContent = ethers.utils.formatEther(balance);
+
+            // Get rewards
+            updateRewards();
+        }
+
+        async function stakeTokens() {
+            const amount = document.getElementById("stakeAmount").value;
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            const tx = await stakingContract.deposit({ value: ethers.utils.parseEther(amount) });
+            await tx.wait();
+            document.getElementById("status").textContent = "Successfully staked!";
+        }
+
+        async function claimRewards() {
+            const tx = await stakingContract.claimRewards();
+            await tx.wait();
+            document.getElementById("status").textContent = "Rewards claimed successfully!";
+            updateRewards();
+        }
+
+        async function withdrawTokens() {
+            const tx = await stakingContract.withdraw();
+            await tx.wait();
+            document.getElementById("status").textContent = "Successfully withdrawn!";
+        }
+
+        async function updateRewards() {
+            try {
+                const rewards = await stakingContract.calculateRewards();
+                document.getElementById("rewards").textContent = ethers.utils.formatEther(rewards);
+            } catch (error) {
+                document.getElementById("rewards").textContent = "0";
+            }
+        }
+
+        document.getElementById("connectWallet").onclick = connectWallet;
+        document.getElementById("stake").onclick = stakeTokens;
+        document.getElementById("claim").onclick = claimRewards;
+        document.getElementById("withdraw").onclick = withdrawTokens;
+    </script>
+</body>
+</html>
