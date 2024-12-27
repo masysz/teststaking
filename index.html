@@ -1,39 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vana Staking DApp</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        button {
-            margin: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        .info {
-            margin-top: 20px;
-        }
-    </style>
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanatic Staking DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 <body>
-    <h1>Vana Staking DApp</h1>
-    <button id="connectButton">Connect Wallet</button>
-    <button id="stakeButton" disabled>Stake</button>
-    <button id="withdrawButton" disabled>Withdraw</button>
-    <button id="calculateRewardButton" disabled>Calculate Reward</button>
-    <div class="info">
-        <h2>Information</h2>
-        <p id="apyInfo">APY: Loading...</p>
-        <p id="totalStakedInfo">Total Staked: Loading...</p>
-        <p id="totalRewardPoolInfo">Total Reward Pool: Loading...</p>
-        <p id="userStakeInfo">User Stake: Loading...</p>
-        <p id="userRewardInfo">User Reward: Loading...</p>
-    </div>
-    <script src="app.js"></script>
+  <h1>Vanatic Staking DApp</h1>
+  <button id="connectWallet">Connect Wallet</button>
+  <p id="walletAddress">Wallet: Not Connected</p>
+
+  <h2>Stake VANA</h2>
+  <input type="number" id="stakeAmount" placeholder="Amount to stake">
+  <button id="stakeButton">Stake</button>
+
+  <h2>Claim Rewards</h2>
+  <button id="claimButton">Claim Rewards</button>
+
+  <h2>Withdraw Staked VANA</h2>
+  <button id="withdrawButton">Withdraw</button>
+
+  <h2>Developer Withdrawal</h2>
+  <input type="number" id="devWithdrawAmount" placeholder="Amount to withdraw">
+  <button id="devWithdrawButton">Dev Withdraw</button>
+
+  <script>
+    const stakingContractAddress = "0xd639405195bab235a44d293632e9fcc21fe61b79fe7841783e60f90b4d6d4da0";
+    const stakingABI = [
+      {
+        "inputs": [
+          { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "devWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      { "inputs": [], "name": "stake", "outputs": [], "stateMutability": "payable", "type": "function" },
+      { "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [], "name": "calculateReward", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
+    ];
+
+    let provider;
+    let signer;
+    let stakingContract;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+
+        const walletAddress = await signer.getAddress();
+        document.getElementById("walletAddress").innerText = `Wallet: ${walletAddress}`;
+
+        stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
+        alert("Wallet connected successfully!");
+      } else {
+        alert("Please install Metamask!");
+      }
+    }
+
+    async function stake() {
+      try {
+        const amount = document.getElementById("stakeAmount").value;
+        const tx = await stakingContract.stake({
+          value: ethers.utils.parseEther(amount)
+        });
+        await tx.wait();
+        alert("Stake successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Stake failed: " + error.message);
+      }
+    }
+
+    async function claimRewards() {
+      try {
+        const reward = await stakingContract.calculateReward(await signer.getAddress());
+        alert(`Your rewards: ${ethers.utils.formatEther(reward)} VANATIC`);
+      } catch (error) {
+        console.error(error);
+        alert("Claim failed: " + error.message);
+      }
+    }
+
+    async function withdraw() {
+      try {
+        const tx = await stakingContract.withdraw();
+        await tx.wait();
+        alert("Withdraw successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Withdraw failed: " + error.message);
+      }
+    }
+
+    async function devWithdraw() {
+      try {
+        const amount = document.getElementById("devWithdrawAmount").value;
+        const tx = await stakingContract.devWithdraw(ethers.utils.parseEther(amount));
+        await tx.wait();
+        alert("Dev withdrawal successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Dev withdraw failed: " + error.message);
+      }
+    }
+
+    document.getElementById("connectWallet").addEventListener("click", connectWallet);
+    document.getElementById("stakeButton").addEventListener("click", stake);
+    document.getElementById("claimButton").addEventListener("click", claimRewards);
+    document.getElementById("withdrawButton").addEventListener("click", withdraw);
+    document.getElementById("devWithdrawButton").addEventListener("click", devWithdraw);
+  </script>
 </body>
 </html>
