@@ -1,4 +1,4 @@
-const provider = new ethers.providers.JsonRpcProvider("https://rpc.vana.org");
+const provider = new ethers.providers.Web3Provider(window.ethereum);
 let signer;
 let contract;
 
@@ -261,13 +261,23 @@ const contractABI = [
 
 document.getElementById('connectButton').addEventListener('click', async () => {
     if (window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        signer = provider.getSigner();
-        contract = new ethers.Contract(contractAddress, contractABI, signer);
-        document.getElementById('stakeButton').disabled = false;
-        document.getElementById('withdrawButton').disabled = false;
-        document.getElementById('calculateRewardButton').disabled = false;
-        updateInfo();
+        try {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const chainId = await provider.getNetwork().then(network => network.chainId);
+            if (chainId !== 1480) {
+                alert('Please switch to Vana network in MetaMask.');
+                return;
+            }
+            signer = provider.getSigner();
+            contract = new ethers.Contract(contractAddress, contractABI, signer);
+            document.getElementById('stakeButton').disabled = false;
+            document.getElementById('withdrawButton').disabled = false;
+            document.getElementById('calculateRewardButton').disabled = false;
+            updateInfo();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to connect to MetaMask.');
+        }
     } else {
         alert('MetaMask is not installed!');
     }
@@ -275,36 +285,56 @@ document.getElementById('connectButton').addEventListener('click', async () => {
 
 document.getElementById('stakeButton').addEventListener('click', async () => {
     const amount = ethers.utils.parseEther(prompt("Enter amount to stake (in VANA):"));
-    const tx = await contract.stake({ value: amount });
-    await tx.wait();
-    alert('Staked successfully!');
-    updateInfo();
+    try {
+        const tx = await contract.stake({ value: amount });
+        await tx.wait();
+        alert('Staked successfully!');
+        updateInfo();
+    } catch (error) {
+        console.error(error);
+        alert('Staking failed.');
+    }
 });
 
 document.getElementById('withdrawButton').addEventListener('click', async () => {
-    const tx = await contract.withdraw();
-    await tx.wait();
-    alert('Withdrawn successfully!');
-    updateInfo();
+    try {
+        const tx = await contract.withdraw();
+        await tx.wait();
+        alert('Withdrawn successfully!');
+        updateInfo();
+    } catch (error) {
+        console.error(error);
+        alert('Withdraw failed.');
+    }
 });
 
 document.getElementById('calculateRewardButton').addEventListener('click', async () => {
-    const userAddress = await signer.getAddress();
-    const reward = await contract.calculateReward(userAddress);
-    document.getElementById('userRewardInfo').innerText = `User Reward: ${ethers.utils.formatEther(reward)} VANA`;
+    try {
+        const userAddress = await signer.getAddress();
+        const reward = await contract.calculateReward(userAddress);
+        document.getElementById('userRewardInfo').innerText = `User Reward: ${ethers.utils.formatEther(reward)} VANA`;
+    } catch (error) {
+        console.error(error);
+        alert('Failed to calculate reward.');
+    }
 });
 
 async function updateInfo() {
-    const apy = await contract.apy();
-    const totalStaked = await contract.totalStaked();
-    const totalRewardPool = await contract.totalRewardPool();
-    const userAddress = await signer.getAddress();
-    const userStake = await contract.stakes(userAddress);
-    const userReward = await contract.calculateReward(userAddress);
+    try {
+        const apy = await contract.apy();
+        const totalStaked = await contract.totalStaked();
+        const totalRewardPool = await contract.totalRewardPool();
+        const userAddress = await signer.getAddress();
+        const userStake = await contract.stakes(userAddress);
+        const userReward = await contract.calculateReward(userAddress);
 
-    document.getElementById('apyInfo').innerText = `APY: ${apy.toString()} %`;
-    document.getElementById('totalStakedInfo').innerText = `Total Staked: ${ethers.utils.formatEther(totalStaked)} VANA`;
-    document.getElementById('totalRewardPoolInfo').innerText = `Total Reward Pool: ${ethers.utils.formatEther(totalRewardPool)} VANA`;
-    document.getElementById('userStakeInfo').innerText = `User Stake: ${ethers.utils.formatEther(userStake.amount)} VANA`;
-    document.getElementById('userRewardInfo').innerText = `User Reward: ${ethers.utils.formatEther(userReward)} VANA`;
+        document.getElementById('apyInfo').innerText = `APY: ${apy.toString()} %`;
+        document.getElementById('totalStakedInfo').innerText = `Total Staked: ${ethers.utils.formatEther(totalStaked)} VANA`;
+        document.getElementById('totalRewardPoolInfo').innerText = `Total Reward Pool: ${ethers.utils.formatEther(totalRewardPool)} VANA`;
+        document.getElementById('userStakeInfo').innerText = `User Stake: ${ethers.utils.formatEther(userStake.amount)} VANA`;
+        document.getElementById('userRewardInfo').innerText = `User Reward: ${ethers.utils.formatEther(userReward)} VANA`;
+    } catch (error) {
+        console.error(error);
+        alert('Failed to update information.');
+    }
 }
