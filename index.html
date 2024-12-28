@@ -1,49 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staking App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #status {
-            margin-top: 20px;
-            font-size: 14px;
-            color: green;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanatic Staking DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 <body>
-    <h1>Staking App</h1>
-    <button id="connectButton">Connect Wallet</button>
-    <div id="status"></div>
+  <h1>Vanatic Staking DApp</h1>
+  <button id="connectWallet">Connect Wallet</button>
+  <p id="walletAddress">Wallet: Not Connected</p>
 
-    <script>
-        document.getElementById('connectButton').addEventListener('click', async () => {
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    // Meminta akses ke akun MetaMask
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    const account = accounts[0];
-                    document.getElementById('status').innerText = `Connected: ${account}`;
-                    console.log(`Connected to account: ${account}`);
-                } catch (error) {
-                    console.error('User rejected the request.');
-                    document.getElementById('status').innerText = 'Connection failed. Please try again.';
-                }
-            } else {
-                alert('MetaMask is not installed. Please install it to use this app: https://metamask.io/download.html');
-            }
+  <h2>Stake VANA</h2>
+  <input type="number" id="stakeAmount" placeholder="Amount to stake">
+  <button id="stakeButton">Stake</button>
+
+  <h2>Claim Rewards</h2>
+  <button id="claimButton">Claim Rewards</button>
+
+  <h2>Withdraw Staked VANA</h2>
+  <button id="withdrawButton">Withdraw</button>
+
+  <h2>Developer Withdrawal</h2>
+  <input type="number" id="devWithdrawAmount" placeholder="Amount to withdraw">
+  <button id="devWithdrawButton">Dev Withdraw</button>
+
+  <script>
+    const stakingContractAddress = "0xd639405195bab235a44d293632e9fcc21fe61b79fe7841783e60f90b4d6d4da0";
+    const stakingABI = [
+      {
+        "inputs": [
+          { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "devWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      { "inputs": [], "name": "stake", "outputs": [], "stateMutability": "payable", "type": "function" },
+      { "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [], "name": "calculateReward", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
+    ];
+
+    let provider;
+    let signer;
+    let stakingContract;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+
+        const walletAddress = await signer.getAddress();
+        document.getElementById("walletAddress").innerText = `Wallet: ${walletAddress}`;
+
+        stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
+        alert("Wallet connected successfully!");
+      } else {
+        alert("Please install Metamask!");
+      }
+    }
+
+    async function stake() {
+      try {
+        const amount = document.getElementById("stakeAmount").value;
+        const tx = await stakingContract.stake({
+          value: ethers.utils.parseEther(amount)
         });
-    </script>
+        await tx.wait();
+        alert("Stake successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Stake failed: " + error.message);
+      }
+    }
+
+    async function claimRewards() {
+      try {
+        const reward = await stakingContract.calculateReward(await signer.getAddress());
+        alert(`Your rewards: ${ethers.utils.formatEther(reward)} VANATIC`);
+      } catch (error) {
+        console.error(error);
+        alert("Claim failed: " + error.message);
+      }
+    }
+
+    async function withdraw() {
+      try {
+        const tx = await stakingContract.withdraw();
+        await tx.wait();
+        alert("Withdraw successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Withdraw failed: " + error.message);
+      }
+    }
+
+    async function devWithdraw() {
+      try {
+        const amount = document.getElementById("devWithdrawAmount").value;
+        const tx = await stakingContract.devWithdraw(ethers.utils.parseEther(amount));
+        await tx.wait();
+        alert("Dev withdrawal successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Dev withdraw failed: " + error.message);
+      }
+    }
+
+    document.getElementById("connectWallet").addEventListener("click", connectWallet);
+    document.getElementById("stakeButton").addEventListener("click", stake);
+    document.getElementById("claimButton").addEventListener("click", claimRewards);
+    document.getElementById("withdrawButton").addEventListener("click", withdraw);
+    document.getElementById("devWithdrawButton").addEventListener("click", devWithdraw);
+  </script>
 </body>
 </html>
