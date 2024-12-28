@@ -281,7 +281,8 @@ async function connectWallet() {
         userAddress = accounts[0];
         document.getElementById("output").innerText = `Connected: ${userAddress}`;
     } catch (error) {
-        console.error(error);
+        console.error("Error connecting to wallet:", error);
+        document.getElementById("output").innerText = `Error connecting wallet: ${error.message}`;
     }
 }
 
