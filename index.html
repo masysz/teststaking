@@ -1,119 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vanatic Staking DApp</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanatic Staking App</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="app.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            background: #6200ea;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #3700b3;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .output {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Vanatic Staking DApp</h1>
-  <button id="connectWallet">Connect Wallet</button>
-  <p id="walletAddress">Wallet: Not Connected</p>
+    <div class="container">
+        <h1>Vanatic Staking</h1>
 
-  <h2>Stake VANA</h2>
-  <input type="number" id="stakeAmount" placeholder="Amount to stake">
-  <button id="stakeButton">Stake</button>
+        <button id="connectWallet">Connect Wallet</button>
 
-  <h2>Claim Rewards</h2>
-  <button id="claimButton">Claim Rewards</button>
+        <h2>Stake</h2>
+        <input id="stakeAmount" type="number" placeholder="Enter ETH amount">
+        <button id="stake">Stake</button>
 
-  <h2>Withdraw Staked VANA</h2>
-  <button id="withdrawButton">Withdraw</button>
+        <h2>Withdraw</h2>
+        <button id="withdraw">Withdraw</button>
 
-  <h2>Developer Withdrawal</h2>
-  <input type="number" id="devWithdrawAmount" placeholder="Amount to withdraw">
-  <button id="devWithdrawButton">Dev Withdraw</button>
+        <h2>Claim Rewards</h2>
+        <button id="claim">Claim Rewards</button>
 
-  <script>
-    const stakingContractAddress = "0xfABa86c326d2031D6ECFa8345F7Cd70F2eB764A3";
-    const stakingABI = [
-      {
-        "inputs": [
-          { "internalType": "uint256", "name": "amount", "type": "uint256" }
-        ],
-        "name": "devWithdraw",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      { "inputs": [], "name": "stake", "outputs": [], "stateMutability": "payable", "type": "function" },
-      { "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-      { "inputs": [], "name": "calculateReward", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
-    ];
-
-    let provider;
-    let signer;
-    let stakingContract;
-
-    async function connectWallet() {
-      if (window.ethereum) {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = provider.getSigner();
-
-        const walletAddress = await signer.getAddress();
-        document.getElementById("walletAddress").innerText = `Wallet: ${walletAddress}`;
-
-        stakingContract = new ethers.Contract(stakingContractAddress, stakingABI, signer);
-        alert("Wallet connected successfully!");
-      } else {
-        alert("Please install Metamask!");
-      }
-    }
-
-    async function stake() {
-      try {
-        const amount = document.getElementById("stakeAmount").value;
-        const tx = await stakingContract.stake({
-          value: ethers.utils.parseEther(amount)
-        });
-        await tx.wait();
-        alert("Stake successful!");
-      } catch (error) {
-        console.error(error);
-        alert("Stake failed: " + error.message);
-      }
-    }
-
-    async function claimRewards() {
-      try {
-        const reward = await stakingContract.calculateReward(await signer.getAddress());
-        alert(`Your rewards: ${ethers.utils.formatEther(reward)} VANATIC`);
-      } catch (error) {
-        console.error(error);
-        alert("Claim failed: " + error.message);
-      }
-    }
-
-    async function withdraw() {
-      try {
-        const tx = await stakingContract.withdraw();
-        await tx.wait();
-        alert("Withdraw successful!");
-      } catch (error) {
-        console.error(error);
-        alert("Withdraw failed: " + error.message);
-      }
-    }
-
-    async function devWithdraw() {
-      try {
-        const amount = document.getElementById("devWithdrawAmount").value;
-        const tx = await stakingContract.devWithdraw(ethers.utils.parseEther(amount));
-        await tx.wait();
-        alert("Dev withdrawal successful!");
-      } catch (error) {
-        console.error(error);
-        alert("Dev withdraw failed: " + error.message);
-      }
-    }
-
-    document.getElementById("connectWallet").addEventListener("click", connectWallet);
-    document.getElementById("stakeButton").addEventListener("click", stake);
-    document.getElementById("claimButton").addEventListener("click", claimRewards);
-    document.getElementById("withdrawButton").addEventListener("click", withdraw);
-    document.getElementById("devWithdrawButton").addEventListener("click", devWithdraw);
-  </script>
+        <div class="output" id="output"></div>
+    </div>
 </body>
 </html>
