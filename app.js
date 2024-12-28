@@ -277,8 +277,10 @@ window.addEventListener("load", async () => {
 
 async function connectWallet() {
     try {
+        console.log("Attempting to connect to wallet...");
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
+        console.log("Wallet connected:", userAddress);
         document.getElementById("output").innerText = `Connected: ${userAddress}`;
     } catch (error) {
         console.error("Error connecting to wallet:", error);
