@@ -3,400 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vanatic Staking App</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <title>Staking App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
             text-align: center;
-            color: #333;
+            margin-top: 50px;
         }
         button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            background: #6200ea;
-            color: #fff;
+            padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
-            border-radius: 5px;
         }
-        button:hover {
-            background: #3700b3;
-        }
-        input {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .output {
-            background: #f9f9f9;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: green;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Vanatic Staking</h1>
-
-        <button id="connectWallet">Connect Wallet</button>
-
-        <h2>Stake</h2>
-        <input id="stakeAmount" type="number" placeholder="Enter ETH amount">
-        <button id="stake">Stake</button>
-
-        <h2>Withdraw</h2>
-        <button id="withdraw">Withdraw</button>
-
-        <h2>Claim Rewards</h2>
-        <button id="claim">Claim Rewards</button>
-
-        <div class="output" id="output"></div>
-    </div>
+    <h1>Staking App</h1>
+    <button id="connectButton">Connect Wallet</button>
+    <div id="status"></div>
 
     <script>
-        const stakingContractAddress = "0xfABa86c326d2031D6ECFa8345F7Cd70F2eB764A3"; // Replace with the correct contract address
-        const stakingABI =  [
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "devWithdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_vanaticToken",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "dev",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "_amount",
-				"type": "uint256"
-			}
-		],
-		"name": "DevWithdrawn",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "stake",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Staked",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "withdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "reward",
-				"type": "uint256"
-			}
-		],
-		"name": "Withdrawn",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "withdrawRewardPool",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "apy",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			}
-		],
-		"name": "calculateReward",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "LOCK_PERIOD",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_A_YEAR",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "stakes",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "rewardDebt",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalRewardPool",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalStaked",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "vanaticToken",
-		"outputs": [
-			{
-				"internalType": "contract IERC20",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-] ;
-        const vanaRPC = "https://rpc.vana.org"; // Replace with the actual RPC endpoint
-
-        let web3;
-        let stakingContract;
-        let userAddress;
-
-        async function connectWallet() {
+        document.getElementById('connectButton').addEventListener('click', async () => {
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-                    userAddress = accounts[0];
-                    web3 = new Web3(window.ethereum);
-                    stakingContract = new web3.eth.Contract(stakingABI, stakingContractAddress);
-                    document.getElementById("output").innerText = `Connected: ${userAddress}`;
+                    // Meminta akses ke akun MetaMask
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const account = accounts[0];
+                    document.getElementById('status').innerText = `Connected: ${account}`;
+                    console.log(`Connected to account: ${account}`);
                 } catch (error) {
-                    console.error("Error connecting to wallet:", error);
-                    document.getElementById("output").innerText = `Error connecting wallet: ${error.message}`;
+                    console.error('User rejected the request.');
+                    document.getElementById('status').innerText = 'Connection failed. Please try again.';
                 }
             } else {
-                alert("MetaMask not detected. Please install it to use this app.");
+                alert('MetaMask is not installed. Please install it to use this app: https://metamask.io/download.html');
             }
-        }
-
-        async function stake() {
-            const amount = document.getElementById("stakeAmount").value;
-            if (!amount || isNaN(amount) || amount <= 0) {
-                alert("Please enter a valid amount to stake.");
-                return;
-            }
-
-            try {
-                await stakingContract.methods.stake().send({
-                    from: userAddress,
-                    value: web3.utils.toWei(amount, "ether"),
-                });
-                document.getElementById("output").innerText = `Successfully staked ${amount} ETH.`;
-            } catch (error) {
-                console.error("Error staking:", error);
-                document.getElementById("output").innerText = `Error staking: ${error.message}`;
-            }
-        }
-
-        async function withdraw() {
-            try {
-                await stakingContract.methods.withdraw().send({ from: userAddress });
-                document.getElementById("output").innerText = "Successfully withdrew staked amount and rewards.";
-            } catch (error) {
-                console.error("Error withdrawing:", error);
-                document.getElementById("output").innerText = `Error withdrawing: ${error.message}`;
-            }
-        }
-
-        async function claimRewards() {
-            try {
-                const rewards = await stakingContract.methods.calculateReward(userAddress).call();
-                document.getElementById("output").innerText = `Claimable rewards: ${web3.utils.fromWei(rewards, "ether")} VANA.`;
-            } catch (error) {
-                console.error("Error claiming rewards:", error);
-                document.getElementById("output").innerText = `Error claiming rewards: ${error.message}`;
-            }
-        }
-
-        document.getElementById("connectWallet").addEventListener("click", connectWallet);
-        document.getElementById("stake").addEventListener("click", stake);
-        document.getElementById("withdraw").addEventListener("click", withdraw);
-        document.getElementById("claim").addEventListener("click", claimRewards);
+        });
     </script>
 </body>
 </html>
